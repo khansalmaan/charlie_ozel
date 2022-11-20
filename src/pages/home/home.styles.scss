@@ -23,16 +23,15 @@
             transform: scale(1.05);
         }
     }
-    .home_logo{
-height: 85vh;
+    .home_logo {
+        height: 85vh;
 
- background-image: url("../../assets/home_logo.png");
-    background-repeat: no-repeat;
-    background-position-x: center;
+        background-image: url("../../assets/home_logo.png");
+        background-repeat: no-repeat;
+        background-position-x: center;
         background-size: 100% 100%;
 
-    // background-size: calc(70vh + 70vw) calc(30vh + 30vw);
-
+        // background-size: calc(70vh + 70vw) calc(30vh + 30vw);
     }
 
     .home_vol {
