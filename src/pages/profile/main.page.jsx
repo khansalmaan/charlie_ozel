@@ -10,9 +10,7 @@ import { v4 as uuidv4 } from "uuid";
 
 import "./main.styles.scss";
 import PopUp from "../../components/popUp/popUp.component";
-
-const MAINNET_CHAIND_ID = "0x1";
-const GOERLI_CHAIN_ID = "0x5";
+import { GOERLI_CHAIN_ID, MAINNET_CHAIND_ID } from "../../utils/constants";
 
 function Main() {
   const [{ address }] = useStateValue();
