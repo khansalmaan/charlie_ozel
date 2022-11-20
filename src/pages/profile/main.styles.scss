@@ -1,0 +1,58 @@
+.mainPage {
+    position: relative;
+
+    height: 100vh;
+    width: 100vw;
+
+    background: #000;
+
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    flex-direction: column;
+
+    .metamask_ham {
+        position: absolute;
+
+        top: 2%;
+        right: 2%;
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        select{
+            height: calc(2vh + 2vw);
+        }
+    }
+
+    .info {
+        position: absolute;
+        top: 2%;
+        left: 2%;
+        width: calc(30vh + 30vw);
+
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+
+        .field {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+
+            width: 100%;
+            margin: calc(0.8vh + 0.8vw);
+            input {
+                width: 65%;
+                text-align: center;
+                border: none;
+                height: calc(1.8vh + 1.8vw);
+            }
+            label {
+                width: 35%;
+                text-align: center;
+                 height: calc(1.8vh + 1.8vw);
+            }
+        }
+    }
+}
