@@ -136,7 +136,7 @@ function ChangeTab() {
 
     const input = parseFloat(e.target.value);
 
-    if (!value && value != 0) return;
+    if (!e.target.value && e.target.value != 0) return;
 
     if (input < 0.01 || input > 5) {
       setinvalidSlippage(true);
