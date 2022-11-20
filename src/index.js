@@ -6,6 +6,10 @@ import reportWebVitals from './reportWebVitals';
 import { StateProvider } from './stateManagement/stateProvider.state';
 import reducer, { initialState } from './stateManagement/reducer.state';
 
+
+if (process.env.REACT_APP_ENV !== "development")
+  console.log = () => { };
+
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>

@@ -4,12 +4,6 @@
 
     position: relative;
 
-    background-image: url("../../assets/home_logo.png");
-    background-repeat: no-repeat;
-    background-position-x: center;
-
-    background-size: calc(70vh + 70vw) calc(30vh + 30vw);
-
     background-color: black;
 
     .launch_btn {
@@ -29,13 +23,29 @@
             transform: scale(1.05);
         }
     }
+    .home_logo{
+height: 85vh;
+
+ background-image: url("../../assets/home_logo.png");
+    background-repeat: no-repeat;
+    background-position-x: center;
+        background-size: 100% 100%;
+
+    // background-size: calc(70vh + 70vw) calc(30vh + 30vw);
+
+    }
 
     .home_vol {
-        position: absolute;
-        bottom: 5%;
-        left: 50%;
+        // position: absolute;
 
-        transform: translateX(-50%);
+        height: 15vh;
+
+        // bottom: 5%;
+        // left: 50%;
+
+        margin: 0 auto;
+
+        // transform: translateX(-50%);
 
         display: flex;
         justify-content: space-around;
@@ -47,6 +57,7 @@
             h1,
             h2 {
                 text-align: center;
+                margin: 0;
             }
         }
     }

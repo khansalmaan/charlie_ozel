@@ -38,6 +38,7 @@ function Home() {
       <Link to="/app" className="launch_btn">
         Launch App
       </Link>
+      <div className="home_logo"></div>
       <div className="home_vol">
         <div className="vol">
           <h1>AUM (USD)</h1>

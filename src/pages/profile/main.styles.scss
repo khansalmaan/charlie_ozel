@@ -21,7 +21,7 @@
         justify-content: center;
         align-items: center;
 
-        select{
+        select {
             height: calc(2vh + 2vw);
         }
     }
@@ -44,14 +44,18 @@
             margin: calc(0.8vh + 0.8vw);
             input {
                 width: 65%;
-                text-align: center;
                 border: none;
                 height: calc(1.8vh + 1.8vw);
+                display: flex;
+                justify-content: center;
+                align-items: center;
             }
             label {
                 width: 35%;
-                text-align: center;
-                 height: calc(1.8vh + 1.8vw);
+                height: calc(1.8vh + 1.8vw);
+                display: flex;
+                justify-content: center;
+                align-items: center;
             }
         }
     }

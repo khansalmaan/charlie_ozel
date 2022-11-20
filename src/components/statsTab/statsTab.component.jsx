@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import {
   getProxyByUser,
   getProxyPayments,
-  getTokenDatabase,
   getUserDetails,
 } from "../../services/web3Service";
 import { useStateValue } from "../../stateManagement/stateProvider.state";
@@ -15,16 +14,10 @@ function StatsTab() {
 
   const [userAddresses, setuserAddresses] = useState([]);
 
-  const [newTokenCheck, setnewTokenCheck] = useState(false);
-  const [newSlippageCheck, setnewSlippageCheck] = useState(false);
-
   const [slippage, setslippage] = useState("");
-  const [selectedToken, setselectedToken] = useState("");
   const [selectedAddress, setselectedAddress] = useState("");
   const [userToken, setuserToken] = useState("");
-  const [totalPayment, settotalPayment] = useState();
-
-  const [sendingTx, setsendingTx] = useState(false);
+  const [totalPayment, settotalPayment] = useState("");
 
   useEffect(() => {
     if (!address) return;
@@ -54,9 +47,6 @@ function StatsTab() {
     setuserToken(userDetials.userToken);
   }
 
-  function handleTokenChange(e) {
-    setselectedToken(e.target.value);
-  }
   function handleUserAddressChange(e) {
     setselectedAddress(e.target.value);
   }
@@ -84,12 +74,12 @@ function StatsTab() {
             className="defaultInput-Black"
             readOnly
             type="select"
-            value="None"
+            value="No account created"
           />
         )}
       </div>
       <div className="field">
-        <label>Total Payments:</label>
+        <label>Total Payments (ETH):</label>
         <input
           className={`defaultInput-Black`}
           readOnly

@@ -3,7 +3,6 @@ import {
   createNewProxy,
   getProxyByUser,
   getTokenDatabase,
-  getTxReceipt,
 } from "../../services/web3Service";
 import { useStateValue } from "../../stateManagement/stateProvider.state";
 
@@ -37,7 +36,6 @@ function CreateTab() {
   async function callWeb3Service() {
     const tokens = await getTokenDatabase(address);
     settokenAddresses([...tokens]);
-    if (tokens.length) setselectedToken(tokens[0]);
 
     const userAddresses = await getProxyByUser(address);
     setuserAddresses([...userAddresses]);
@@ -75,13 +73,15 @@ function CreateTab() {
         slippage,
         selectedAddress
       );
-      
+
       const newProxyAddress = tx.events[0].address;
 
       setnewProxyAddress(newProxyAddress);
 
-      setshowPopUp(true);
+      // for fetching the latest accounts
+      callWeb3Service();
 
+      setshowPopUp(true);
     } catch (err) {
       console.log(err.message);
     }
@@ -89,15 +89,22 @@ function CreateTab() {
     setsendingTx(false);
   }
 
-    function validateSlippageInput(e) {
-      const input = parseFloat(e.target.value);
-      if (input < 0.1 || input > 5) {
-        setinvalidSlippage(true);
-      } else {
-        setinvalidSlippage(false);
-      }
-      setslippage(input);
+  function validateSlippageInput(e) {
+    setslippage(e.target.value);
+
+    const input = parseFloat(e.target.value);
+
+    if (!input) return;
+
+    if (input < 0.01 || input > 5) {
+      setinvalidSlippage(true);
+    } else {
+      setinvalidSlippage(false);
     }
+
+    // check number of digits after decimals
+    if (e.target.value.split(".")[1]?.length > 2) setinvalidSlippage(true);
+  }
 
   return (
     <>
@@ -119,6 +126,9 @@ function CreateTab() {
               value={selectedToken}
               onChange={handleTokenChange}
             >
+              <option value="" disabled >
+                - - Choose - -
+              </option>
               {tokenAddresses.map((token) => (
                 <option key={uuidv4()} readOnly value={token}>
                   {ADDRESS_TO_TOKEN[token] ? ADDRESS_TO_TOKEN[token] : token}
@@ -130,7 +140,7 @@ function CreateTab() {
               className="defaultInput-Black"
               readOnly
               type="select"
-              value="None"
+              value="No account created"
             />
           )}
         </div>
@@ -167,14 +177,17 @@ function CreateTab() {
               className="defaultInput-Black"
               readOnly
               type="select"
-              value="None"
+              value="No account created"
             />
           )}
         </div>
         <input
-          className={`defaultInput-Black submitBtn ${
+          className={`defaultInput-Black submitBtn 
+          ${
             invalidSlippage && "disable"
-          }`}
+          } 
+          ${!slippage && "disable"}
+          ${!selectedToken && "disable"}`}
           readOnly
           type="submit"
           value={sendingTx ? "Sending Transaction..." : "Create new account"}

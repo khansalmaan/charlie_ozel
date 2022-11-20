@@ -71,7 +71,7 @@ export async function getProxyByUser(address) {
 
 // in progress
 export async function createNewProxy(address,token, slippage) {
-    const res = await OZERC1967Proxy.methods.createNewProxy([address, token, slippage*100]).send({ from: address });
+    const res = await OZERC1967Proxy.methods.createNewProxy([address, token, parseInt(slippage*100)]).send({ from: address });
     return res;
 }
 
@@ -85,7 +85,7 @@ export async function  changeUserToken(selectedAccount, token, address){
 
 export async function changeUserSlippage(selectedAccount, slippage, address) {
     const OZBeaconProxy = new web3_eth.eth.Contract(OZBeaconProxy_ABI, selectedAccount);
-    const res = await OZBeaconProxy.methods.changeUserSlippage(slippage*100).send({ from: address });
+    const res = await OZBeaconProxy.methods.changeUserSlippage(parseInt(slippage * 100)).send({ from: address });
     return res;
 }
 
@@ -93,7 +93,7 @@ export async function changeUserSlippage(selectedAccount, slippage, address) {
 // in progress
 export async function getProxyPayments(address) {
     const res = await StorageBeacon.methods.getProxyPayments(address).call()
-    return res;
+    return fromAtomicUnit(res);
 }
 
 export async function getUserDetails(token) {

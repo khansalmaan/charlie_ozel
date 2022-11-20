@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import {
   changeUserSlippage,
   changeUserToken,
-  createNewProxy,
   getProxyByUser,
   getTokenDatabase,
 } from "../../services/web3Service";
@@ -45,8 +44,6 @@ function ChangeTab() {
   async function callWeb3Service() {
     const tokens = await getTokenDatabase(address);
     settokenAddresses([...tokens]);
-
-    if (tokens.length) setselectedToken(tokens[0]);
 
     const userAddresses = await getProxyByUser(address);
     setuserAddresses([...userAddresses]);
@@ -134,14 +131,21 @@ function ChangeTab() {
     setnewSlippageCheck(!newSlippageCheck);
   }
 
-  function validateSlippageInput(e){
+  function validateSlippageInput(e) {
+    setslippage(e.target.value);
+
     const input = parseFloat(e.target.value);
-    if(input < 0.1 || input > 5){
+
+    if (!input) return;
+
+    if (input < 0.01 || input > 5) {
       setinvalidSlippage(true);
-    }else{
-       setinvalidSlippage(false);
-    } 
-     setslippage(input);
+    } else {
+      setinvalidSlippage(false);
+    }
+
+    // check number of digits after decimals
+    if (e.target.value.split(".")[1]?.length > 2) setinvalidSlippage(true);
   }
 
   return (
@@ -175,11 +179,11 @@ function ChangeTab() {
               className="defaultInput-Black"
               readOnly
               type="select"
-              value="None"
+              value="No account created"
             />
           )}
         </div>
-        <div className="field ">
+        <div className={`field ${!userAddresses.length && "disable"}`}>
           <input
             className="defaultInput-Black"
             type="checkbox"
@@ -197,6 +201,9 @@ function ChangeTab() {
               value={selectedToken}
               onChange={handleTokenChange}
             >
+              <option value="" disabled>
+                - - Choose - -
+              </option>
               {tokenAddresses.map((token) => (
                 <option key={uuidv4()} readOnly value={token}>
                   {ADDRESS_TO_TOKEN[token] ? ADDRESS_TO_TOKEN[token] : token}
@@ -212,7 +219,7 @@ function ChangeTab() {
             />
           )}
         </div>
-        <div className="field">
+        <div className={`field ${!userAddresses.length && "disable"}`}>
           <input
             className="defaultInput-Black"
             type="checkbox"
@@ -233,9 +240,11 @@ function ChangeTab() {
           />
         </div>
         <input
-          className={`defaultInput-Black submitBtn ${
-            !newSlippageCheck && !newTokenCheck && "disable"
-          } ${invalidSlippage && "disable"}`}
+          className={`defaultInput-Black submitBtn 
+          ${!newSlippageCheck && !newTokenCheck && "disable"} 
+          ${invalidSlippage && "disable"} 
+          ${newSlippageCheck && !slippage && "disable"}
+          ${newTokenCheck && !selectedToken && "disable"}`}
           readOnly
           type="submit"
           value={sendingTx ? "Sending Transaction" : "Change Details"}

@@ -1,20 +1,17 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import "./connectMetamask.style.scss";
 
 import { toast } from "react-toastify";
 import { useStateValue } from "../../stateManagement/stateProvider.state";
-import { useNavigate } from "react-router-dom";
 
 export default function MetamaskWalletBtn({ active }) {
   const [{ address }, dispatch] = useStateValue();
   const [isLoading, setisLoading] = useState(false);
-  const [account, setaccount] = useState("")
 
-  const navigate = useNavigate();
+  useEffect(() => {}, []);
 
   const accountChangeHandler = async (account) => {
-
     dispatch({
       type: "METAMASK_ADDRESS",
       payload: account,
@@ -32,6 +29,10 @@ export default function MetamaskWalletBtn({ active }) {
       window.ethereum
         .request({ method: "eth_requestAccounts" })
         .then((res) => accountChangeHandler(res[0]));
+
+      window.ethereum.on("accountsChanged", (accounts) => {
+        accountChangeHandler(accounts[0]);
+      });
     } else {
       alert("install metamask extension!!");
       setisLoading(false);
@@ -54,7 +55,7 @@ export default function MetamaskWalletBtn({ active }) {
       progress: undefined,
     });
 
-    window.location.reload(false);
+    // window.location.reload(true);
   }
 
   return (
