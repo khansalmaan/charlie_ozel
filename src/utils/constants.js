@@ -9,3 +9,5 @@ export const ADDRESS_TO_TOKEN = {
 
 export const MAINNET_CHAIND_ID = "0x1";
 export const GOERLI_CHAIN_ID = "0x5";
+
+export const ACCOUNT_NAME_REGEX = /^[a-zA-Z0-9]*$/

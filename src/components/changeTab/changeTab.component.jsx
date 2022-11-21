@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import {
   changeUserSlippage,
   changeUserToken,
+  changeUserTokenNSlippage,
   getProxyByUser,
   getTokenDatabase,
 } from "../../services/web3Service";
@@ -10,12 +11,14 @@ import { useStateValue } from "../../stateManagement/stateProvider.state";
 import { v4 as uuidv4 } from "uuid";
 import PopUp from "../popUp/popUp.component";
 import { ADDRESS_TO_TOKEN } from "../../utils/constants";
+import Clipboard from "../clipboard/clipboard.component";
 
 function ChangeTab() {
   const [{ address }] = useStateValue();
 
   const [tokenAddresses, settokenAddresses] = useState([]);
   const [userAddresses, setuserAddresses] = useState([]);
+  const [userAddressNames, setuserAddressNames] = useState([]);
 
   const [newTokenCheck, setnewTokenCheck] = useState(false);
   const [newSlippageCheck, setnewSlippageCheck] = useState(false);
@@ -23,11 +26,12 @@ function ChangeTab() {
   const [slippage, setslippage] = useState("");
   const [selectedToken, setselectedToken] = useState("");
   const [selectedAddress, setselectedAddress] = useState("");
+  const [selectedAddressName, setselectedAddressName] = useState("");
 
-  const [invalidSlippage, setinvalidSlippage] = useState(false)
+  const [invalidSlippage, setinvalidSlippage] = useState(false);
 
   const [newToken, setnewToken] = useState("");
-  const [newSippage, setnewSippage] = useState("");
+  const [newSlippage, setnewSlippage] = useState("");
 
   const [message, setmessage] = useState("");
   const [message2, setmessage2] = useState("");
@@ -45,19 +49,25 @@ function ChangeTab() {
     const tokens = await getTokenDatabase(address);
     settokenAddresses([...tokens]);
 
-    const userAddresses = await getProxyByUser(address);
+    const { 0: userAddresses, 1: userAddressNames } = await getProxyByUser(
+      address
+    );
+
     setuserAddresses([...userAddresses]);
     if (userAddresses.length) setselectedAddress(userAddresses[0]);
+
+    setuserAddressNames([...userAddressNames]);
+    if (userAddressNames.length) setselectedAddressName(userAddressNames[0]);
   }
+
   function handleTokenChange(e) {
     setselectedToken(e.target.value);
   }
   function handleUserAddressChange(e) {
-    setselectedAddress(e.target.value);
-  }
+    const addressIndex = userAddressNames.indexOf(e.target.value);
 
-  function enablePopUp() {
-    setshowPopUp(true);
+    setselectedAddress(userAddresses[addressIndex]);
+    setselectedAddressName(userAddressNames[addressIndex]);
   }
 
   function disablePopUp() {
@@ -80,7 +90,31 @@ function ChangeTab() {
     let newslippage = "";
 
     try {
-      if (newTokenCheck) {
+      if (newTokenCheck && newSlippageCheck) {
+        const tx = await changeUserTokenNSlippage(
+          selectedAddress,
+          selectedToken,
+          slippage,
+          address
+        );
+
+        newtoken = tx.events.NewUserToken.returnValues.newToken;
+        newslippage = +tx.events.NewUserSlippage.returnValues.newSlippage/100;
+
+        setnewToken(newtoken);
+        setnewSlippage(newslippage);
+
+        setmessage(
+          ADDRESS_TO_TOKEN[newtoken]
+            ? "New token successfully changed to " + ADDRESS_TO_TOKEN[newtoken]
+            : "New token successfully changed to " + newtoken
+        );
+
+        setmessage2(
+          "New slippage successfully changed to " + newslippage + "%"
+        );
+
+      } else if (newTokenCheck) {
         const tx = await changeUserToken(
           selectedAddress,
           selectedToken,
@@ -94,25 +128,14 @@ function ChangeTab() {
             ? "New token successfully changed to " + ADDRESS_TO_TOKEN[newtoken]
             : "New token successfully changed to " + newtoken
         );
-      }
-
-      if (newSlippageCheck) {
+      } else if (newSlippageCheck) {
         const tx = await changeUserSlippage(selectedAddress, slippage, address);
         console.log(tx);
         newslippage = +tx.events.NewUserSlippage.returnValues.newSlippage / 100;
-        setnewSippage(newslippage);
+        setnewSlippage(newslippage);
         setmessage("New slippage successfully changed to " + newslippage + "%");
-      }
-
-      if (newtoken && newslippage) {
-       setmessage(
-         ADDRESS_TO_TOKEN[newtoken]
-           ? "New token successfully changed to " + ADDRESS_TO_TOKEN[newtoken]
-           : "New token successfully changed to " + newtoken
-       );
-        setmessage2(
-          "New slippage successfully changed to " + newslippage + "%"
-        );
+      } else {
+        // do nothing
       }
 
       setshowPopUp(true);
@@ -157,7 +180,7 @@ function ChangeTab() {
           closePopUp={disablePopUp}
         />
       )}
-      <form onSubmit={handleSubmit}>
+      <div className="form">
         <div className="field">
           <label>Select Account:</label>
           {userAddresses.length ? (
@@ -165,10 +188,10 @@ function ChangeTab() {
               name="tokens"
               id="tokens"
               className="defaultInput-Black limitWidth"
-              value={selectedAddress}
+              value={selectedAddressName}
               onChange={handleUserAddressChange}
             >
-              {userAddresses.map((token) => (
+              {userAddressNames.map((token) => (
                 <option key={uuidv4()} readOnly value={token}>
                   {token}
                 </option>
@@ -183,6 +206,12 @@ function ChangeTab() {
             />
           )}
         </div>
+        {selectedAddress && (
+          <div className="field">
+            <label>Raw Account:</label>
+            <Clipboard textToCopy={selectedAddress} />
+          </div>
+        )}
         <div className={`field ${!userAddresses.length && "disable"}`}>
           <input
             className="defaultInput-Black"
@@ -247,9 +276,10 @@ function ChangeTab() {
           ${newTokenCheck && !selectedToken && "disable"}`}
           readOnly
           type="submit"
+          onClick={handleSubmit}
           value={sendingTx ? "Sending Transaction" : "Change Details"}
         />
-      </form>
+      </div>
     </>
   );
 }

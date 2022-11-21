@@ -9,18 +9,23 @@ import { useStateValue } from "../../stateManagement/stateProvider.state";
 import { v4 as uuidv4 } from "uuid";
 import PopUp from "../popUp/popUp.component";
 import { ADDRESS_TO_TOKEN } from "../../utils/constants";
+import { isValidAccountName } from "../../utils/commonFunctions";
 
 function CreateTab() {
   const [{ address }] = useStateValue();
 
   const [tokenAddresses, settokenAddresses] = useState([]);
   const [userAddresses, setuserAddresses] = useState([]);
+  const [userAddressNames, setuserAddressNames] = useState([]);
 
   const [slippage, setslippage] = useState("");
+  const [accountName, setaccountName] = useState("");
   const [selectedToken, setselectedToken] = useState("");
   const [selectedAddress, setselectedAddress] = useState("");
+  const [selectedAddressName, setselectedAddressName] = useState("");
 
   const [invalidSlippage, setinvalidSlippage] = useState(false);
+  const [invalidName, setinvalidName] = useState(false);
 
   const [newProxyAddress, setnewProxyAddress] = useState("");
 
@@ -37,20 +42,25 @@ function CreateTab() {
     const tokens = await getTokenDatabase(address);
     settokenAddresses([...tokens]);
 
-    const userAddresses = await getProxyByUser(address);
+    const { 0: userAddresses, 1: userAddressNames } = await getProxyByUser(
+      address
+    );
+
     setuserAddresses([...userAddresses]);
     if (userAddresses.length) setselectedAddress(userAddresses[0]);
+
+    setuserAddressNames([...userAddressNames]);
+    if (userAddressNames.length) setselectedAddressName(userAddressNames[0]);
   }
 
   function handleTokenChange(e) {
     setselectedToken(e.target.value);
   }
   function handleUserAddressChange(e) {
-    setselectedAddress(e.target.value);
-  }
+    const addressIndex = userAddressNames.indexOf(e.target.value);
 
-  function enablePopUp() {
-    setshowPopUp(true);
+    setselectedAddress(userAddresses[addressIndex]);
+    setselectedAddressName(userAddressNames[addressIndex]);
   }
 
   function disablePopUp() {
@@ -62,7 +72,7 @@ function CreateTab() {
 
     if (sendingTx) return;
 
-    console.log(selectedToken, slippage, selectedAddress);
+    console.log(selectedToken, slippage, selectedAddress, accountName);
 
     setsendingTx(true);
 
@@ -71,8 +81,10 @@ function CreateTab() {
         address,
         selectedToken,
         slippage,
-        selectedAddress
+        accountName
       );
+
+      console.log(tx)
 
       const newProxyAddress = tx.events[0].address;
 
@@ -94,7 +106,7 @@ function CreateTab() {
 
     const input = parseFloat(e.target.value);
 
-    if (!e.target.value && e.target.value != 0 ) return;
+    if (!e.target.value && e.target.value != 0) return;
 
     if (input < 0.01 || input > 5) {
       setinvalidSlippage(true);
@@ -106,16 +118,33 @@ function CreateTab() {
     if (e.target.value.split(".")[1]?.length > 2) setinvalidSlippage(true);
   }
 
+  function validateNameInput(e) {
+    const input = e.target.value;
+
+    setaccountName(input);
+
+    if (isValidAccountName(input)) {
+      setinvalidName(false);
+    } else {
+      setinvalidName(true);
+    }
+
+    // check number of digits after decimals
+    if (e.target.value.length > 18 || e.target.value.length < 1)
+      setinvalidName(true);
+  }
+
   return (
     <>
       {showPopUp && (
         <PopUp
           message={"Account successfully created!"}
+          message2={accountName && `Name: ${accountName}`}
           subMessage={newProxyAddress}
           closePopUp={disablePopUp}
         />
       )}
-      <form onSubmit={handleSubmit}>
+      <div className="form">
         <div className="field">
           <label>Select Token:</label>
           {tokenAddresses.length ? (
@@ -126,7 +155,7 @@ function CreateTab() {
               value={selectedToken}
               onChange={handleTokenChange}
             >
-              <option value="" disabled >
+              <option value="" disabled>
                 - - Choose - -
               </option>
               {tokenAddresses.map((token) => (
@@ -157,16 +186,26 @@ function CreateTab() {
           />
         </div>
         <div className="field">
+          <label>Name of Account:</label>
+          <input
+            className={`defaultInput-Black ${invalidName && "invalid-input"}`}
+            onChange={validateNameInput}
+            type="text"
+            placeholder="Enter Name"
+            value={accountName}
+          />
+        </div>
+        <div className="field">
           <label>List of Accounts:</label>
           {userAddresses.length ? (
             <select
               name="tokens"
               id="tokens"
               className="defaultInput-Black limitWidth"
-              value={selectedAddress}
+              value={selectedAddressName}
               onChange={handleUserAddressChange}
             >
-              {userAddresses.map((token) => (
+              {userAddressNames.map((token) => (
                 <option key={uuidv4()} readOnly value={token}>
                   {token}
                 </option>
@@ -183,16 +222,16 @@ function CreateTab() {
         </div>
         <input
           className={`defaultInput-Black submitBtn 
-          ${
-            invalidSlippage && "disable"
-          } 
+          ${invalidSlippage && "disable"} 
           ${!slippage && "disable"}
+          ${!accountName && "disable"}
           ${!selectedToken && "disable"}`}
           readOnly
           type="submit"
+          onClick={handleSubmit}
           value={sendingTx ? "Sending Transaction..." : "Create new account"}
         />
-      </form>
+      </div>
     </>
   );
 }

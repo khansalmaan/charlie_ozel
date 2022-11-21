@@ -50,6 +50,11 @@
             "internalType": "uint256",
             "name": "userSlippage",
             "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "accountName",
+            "type": "string"
           }
         ],
         "internalType": "struct StorageBeacon.UserConfig",

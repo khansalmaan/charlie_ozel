@@ -8,14 +8,17 @@ import { useStateValue } from "../../stateManagement/stateProvider.state";
 
 import { v4 as uuidv4 } from "uuid";
 import { ADDRESS_TO_TOKEN } from "../../utils/constants";
+import Clipboard from "../clipboard/clipboard.component";
 
 function StatsTab() {
   const [{ address }] = useStateValue();
 
   const [userAddresses, setuserAddresses] = useState([]);
+  const [userAddressNames, setuserAddressNames] = useState([]);
 
   const [slippage, setslippage] = useState("");
   const [selectedAddress, setselectedAddress] = useState("");
+  const [selectedAddressName, setselectedAddressName] = useState("");
   const [userToken, setuserToken] = useState("");
   const [totalPayment, settotalPayment] = useState("");
 
@@ -30,9 +33,15 @@ function StatsTab() {
   }, [selectedAddress]);
 
   async function callWeb3Service() {
-    const userAddresses = await getProxyByUser(address);
+    const { 0: userAddresses, 1: userAddressNames } = await getProxyByUser(
+      address
+    );
+
     setuserAddresses([...userAddresses]);
     if (userAddresses.length) setselectedAddress(userAddresses[0]);
+
+    setuserAddressNames([...userAddressNames]);
+    if (userAddressNames.length) setselectedAddressName(userAddressNames[0]);
   }
 
   async function onAddressChange() {
@@ -48,11 +57,14 @@ function StatsTab() {
   }
 
   function handleUserAddressChange(e) {
-    setselectedAddress(e.target.value);
+    const addressIndex =  userAddressNames.indexOf(e.target.value);
+
+    setselectedAddress(userAddresses[addressIndex]);
+    setselectedAddressName(userAddressNames[addressIndex]);
   }
 
   return (
-    <form>
+    <div className="form">
       <div className="field">
         <label>List of Accounts:</label>
         {userAddresses.length ? (
@@ -60,10 +72,10 @@ function StatsTab() {
             name="tokens"
             id="tokens"
             className="defaultInput-Black limitWidth"
-            value={selectedAddress}
+            value={selectedAddressName}
             onChange={handleUserAddressChange}
           >
-            {userAddresses.map((token) => (
+            {userAddressNames.map((token) => (
               <option key={uuidv4()} readOnly value={token}>
                 {token}
               </option>
@@ -78,6 +90,12 @@ function StatsTab() {
           />
         )}
       </div>
+      {selectedAddress && (
+        <div className="field">
+          <label>Raw Account:</label>
+          <Clipboard textToCopy={selectedAddress} />
+        </div>
+      )}
       <div className="field">
         <label>Total Payments (ETH):</label>
         <input
@@ -112,7 +130,7 @@ function StatsTab() {
           value={slippage}
         />
       </div>
-    </form>
+    </div>
   );
 }
 

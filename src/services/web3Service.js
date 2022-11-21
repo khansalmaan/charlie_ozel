@@ -81,6 +81,9 @@ export async function getAUMValue() {
 
 // functions -- APP -- as in document
 export async function balanceOf(address) {
+
+    if(!address) return;
+
     if (window.ethereum.chainId == MAINNET_CHAIND_ID) {
         const res = await OZL_Main.methods.balanceOf(address).call();
         return fromAtomicUnit(res)
@@ -91,6 +94,9 @@ export async function balanceOf(address) {
 }
 
 export async function getOzelBalances(address) {
+
+    if(!address) return
+
     if (window.ethereum.chainId == MAINNET_CHAIND_ID) {
         const res = await OZL_Main.methods.getOzelBalances(address).call();
         return [fromAtomicUnit(res[0]), fromAtomicUnit(res[1])]
@@ -110,6 +116,9 @@ export async function getTokenDatabase() {
 }
 
 export async function getProxyByUser(address) {
+
+    if (!address) return
+
     const web3_eth = new Web3(Web3.givenProvider);
     const contractAddress = window.ethereum.chainId == MAINNET_CHAIND_ID ? STORAGE_BEACON_MAIN : STORAGE_BEACON
     const StorageBeacon = new web3_eth.eth.Contract(StorageBeacon_ABI, contractAddress);
@@ -118,11 +127,14 @@ export async function getProxyByUser(address) {
 }
 
 // in progress
-export async function createNewProxy(address, token, slippage) {
+export async function createNewProxy(address, token, slippage, accountName) {
+
+    console.log(address, token, parseInt(slippage * 100), accountName);
+
     const web3_eth = new Web3(Web3.givenProvider);
     const contractAddress = window.ethereum.chainId == MAINNET_CHAIND_ID ? OZERC1967PROXY_MAIN : OZERC1967PROXY
     const OZERC1967Proxy = new web3_eth.eth.Contract(OZERC1967Proxy_ABI, contractAddress);
-    const res = await OZERC1967Proxy.methods.createNewProxy([address, token, parseInt(slippage * 100)]).send({ from: address });
+    const res = await OZERC1967Proxy.methods.createNewProxy([address, token, parseInt(slippage * 100), accountName]).send({ from: address });
     return res;
 }
 
@@ -142,9 +154,21 @@ export async function changeUserSlippage(selectedAccount, slippage, address) {
     return res;
 }
 
+export async function changeUserTokenNSlippage(selectedAccount, token, slippage, address) {
+    const web3_eth = new Web3(Web3.givenProvider);
+    const OZBeaconProxy = new web3_eth.eth.Contract(OZBeaconProxy_ABI, selectedAccount);
+    const res = await OZBeaconProxy.methods.changeUserTokenNSlippage(token, parseInt(slippage * 100)).send({ from: address });
+    return res;
+}
+
+
+
 // functions -- STATS -- as in document
 // in progress
 export async function getProxyPayments(address) {
+
+    if (!address) return
+
     const web3_eth = new Web3(Web3.givenProvider);
     const contractAddress = window.ethereum.chainId == MAINNET_CHAIND_ID ? STORAGE_BEACON_MAIN : STORAGE_BEACON
     const StorageBeacon = new web3_eth.eth.Contract(StorageBeacon_ABI, contractAddress);
@@ -153,6 +177,9 @@ export async function getProxyPayments(address) {
 }
 
 export async function getUserDetails(token) {
+
+    if (!token) return
+
     const web3_eth = new Web3(Web3.givenProvider);
     const OZBeaconProxy = new web3_eth.eth.Contract(OZBeaconProxy_ABI, token);
     const res = await OZBeaconProxy.methods.getUserDetails().call()
@@ -160,6 +187,9 @@ export async function getUserDetails(token) {
 }
 
 export async function getTxReceipt(txHash) {
+
+    if (!txHash) return
+
     const web3_eth = new Web3(Web3.givenProvider);
     return await web3_eth.eth.getTransactionReceipt(txHash);
 }
