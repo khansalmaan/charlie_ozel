@@ -130,7 +130,7 @@ function CreateTab() {
     }
 
     // check number of digits after decimals
-    if (e.target.value.length > 18 || e.target.value.length < 1)
+    if (e.target.value.length > 18)
       setinvalidName(true);
   }
 
@@ -186,7 +186,7 @@ function CreateTab() {
           />
         </div>
         <div className="field">
-          <label>Name of Account:</label>
+          <label>Name the Account:</label>
           <input
             className={`defaultInput-Black ${invalidName && "invalid-input"}`}
             onChange={validateNameInput}
@@ -223,6 +223,7 @@ function CreateTab() {
         <input
           className={`defaultInput-Black submitBtn 
           ${invalidSlippage && "disable"} 
+          ${invalidName && "disable"} 
           ${!slippage && "disable"}
           ${!accountName && "disable"}
           ${!selectedToken && "disable"}`}

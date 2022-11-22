@@ -45,7 +45,12 @@ function StatsTab() {
   }
 
   async function onAddressChange() {
-    const payment = await getProxyPayments(selectedAddress);
+    let payment = await getProxyPayments(selectedAddress);
+   
+    if (payment.includes(".")) {
+      payment = payment.split(".")[0] + "." + payment.split(".")[1].slice(0, 5);
+    }
+    
     console.log("payment", payment);
     settotalPayment(payment);
 

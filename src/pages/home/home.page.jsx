@@ -20,9 +20,19 @@ function Home() {
   const [ethVol, setethVol] = useState(0);
 
   async function callWeb3Service() {
-    const usdVol = await getTotalVolumeInUSD();
-    const ethVol = await getTotalVolumeInETH();
-    const aum = await getAUMValue();
+    let usdVol = await getTotalVolumeInUSD();
+    let ethVol = await getTotalVolumeInETH();
+    let aum = await getAUMValue();
+
+    if (aum.includes(".")) {
+      aum = aum.split(".")[0] + "."+ aum.split(".")[1].slice(0, 2);
+    }
+    if (ethVol.includes(".")) {
+      ethVol = ethVol.split(".")[0] + "."+ ethVol.split(".")[1].slice(0, 2);
+    }
+    if (usdVol.includes(".")) {
+      usdVol = usdVol.split(".")[0] + "."+ usdVol.split(".")[1].slice(0, 2);
+    }
 
     setaumVol(aum);
     setusdVol(ethVol);
@@ -46,9 +56,7 @@ function Home() {
         </div>
         <div className="vol">
           <h1>TOTAL VOLUME ($) - (ETH)</h1>
-          <h2>
-            {usdVol && ethVol ? `${usdVol}-${ethVol}` : "Loading..."}
-          </h2>
+          <h2>{usdVol && ethVol ? `${usdVol}-${ethVol}` : "Loading..."}</h2>
         </div>
       </div>
     </div>
