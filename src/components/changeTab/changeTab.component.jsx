@@ -49,12 +49,15 @@ function ChangeTab() {
     const tokens = await getTokenDatabase(address);
     settokenAddresses([...tokens]);
 
-    const { 0: userAddresses, 1: userAddressNames } = await getProxyByUser(
+    let { 0: userAddresses, 1: userAddressNames } = await getProxyByUser(
       address
     );
 
     setuserAddresses([...userAddresses]);
     if (userAddresses.length) setselectedAddress(userAddresses[0]);
+
+    // to prevent same name;
+    userAddressNames = userAddressNames.map((item, i) => item + `_${i}`);
 
     setuserAddressNames([...userAddressNames]);
     if (userAddressNames.length) setselectedAddressName(userAddressNames[0]);
@@ -99,7 +102,7 @@ function ChangeTab() {
         );
 
         newtoken = tx.events.NewUserToken.returnValues.newToken;
-        newslippage = +tx.events.NewUserSlippage.returnValues.newSlippage/100;
+        newslippage = +tx.events.NewUserSlippage.returnValues.newSlippage / 100;
 
         setnewToken(newtoken);
         setnewSlippage(newslippage);
@@ -113,7 +116,6 @@ function ChangeTab() {
         setmessage2(
           "New slippage successfully changed to " + newslippage + "%"
         );
-
       } else if (newTokenCheck) {
         const tx = await changeUserToken(
           selectedAddress,
@@ -193,7 +195,7 @@ function ChangeTab() {
             >
               {userAddressNames.map((token) => (
                 <option key={uuidv4()} readOnly value={token}>
-                  {token}
+                  {token.split("_")[0]}
                 </option>
               ))}
             </select>

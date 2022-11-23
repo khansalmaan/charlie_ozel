@@ -33,12 +33,15 @@ function StatsTab() {
   }, [selectedAddress]);
 
   async function callWeb3Service() {
-    const { 0: userAddresses, 1: userAddressNames } = await getProxyByUser(
+    let { 0: userAddresses, 1: userAddressNames } = await getProxyByUser(
       address
     );
 
     setuserAddresses([...userAddresses]);
     if (userAddresses.length) setselectedAddress(userAddresses[0]);
+
+    // to prevent same name;
+    userAddressNames = userAddressNames.map((item,i )=> item + `_${i}`);
 
     setuserAddressNames([...userAddressNames]);
     if (userAddressNames.length) setselectedAddressName(userAddressNames[0]);
@@ -62,6 +65,11 @@ function StatsTab() {
   }
 
   function handleUserAddressChange(e) {
+      console.log(e);
+  console.log(e.target.key);
+   console.log(e.target.class);
+    console.log(e.target.value);
+
     const addressIndex =  userAddressNames.indexOf(e.target.value);
 
     setselectedAddress(userAddresses[addressIndex]);
@@ -82,7 +90,7 @@ function StatsTab() {
           >
             {userAddressNames.map((token) => (
               <option key={uuidv4()} readOnly value={token}>
-                {token}
+                {token.split("_")[0]}
               </option>
             ))}
           </select>
