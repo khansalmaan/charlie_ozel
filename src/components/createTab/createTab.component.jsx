@@ -1,18 +1,18 @@
 import React, { useEffect, useState } from "react";
 import {
   createNewProxy,
-  getProxyByUser,
+  getAccountsByUser,
   getTokenDatabase,
 } from "../../services/web3Service";
 import { useStateValue } from "../../stateManagement/stateProvider.state";
 
 import { v4 as uuidv4 } from "uuid";
 import PopUp from "../popUp/popUp.component";
-import { ADDRESS_TO_TOKEN } from "../../utils/constants";
+import { setToken } from "../../utils/constants";
 import { isValidAccountName } from "../../utils/commonFunctions";
 
 function CreateTab() {
-  const [{ address }] = useStateValue();
+  const [{ address, chain }] = useStateValue();
 
   const [tokenAddresses, settokenAddresses] = useState([]);
   const [userAddresses, setuserAddresses] = useState([]);
@@ -35,14 +35,14 @@ function CreateTab() {
 
   useEffect(() => {
     if (!address) return;
-    callWeb3Service();
-  }, [address]);
+    resetModule();
+  }, [address, chain]);
 
   async function callWeb3Service() {
     const tokens = await getTokenDatabase(address);
     settokenAddresses([...tokens]);
 
-    const { 0: userAddresses, 1: userAddressNames } = await getProxyByUser(
+    const { 0: userAddresses, 1: userAddressNames } = await getAccountsByUser(
       address
     );
 
@@ -56,6 +56,7 @@ function CreateTab() {
   function handleTokenChange(e) {
     setselectedToken(e.target.value);
   }
+
   function handleUserAddressChange(e) {
     const addressIndex = userAddressNames.indexOf(e.target.value);
 
@@ -64,6 +65,9 @@ function CreateTab() {
   }
 
   function disablePopUp() {
+
+    resetModule();
+
     setshowPopUp(false);
   }
 
@@ -71,8 +75,6 @@ function CreateTab() {
     e.preventDefault();
 
     if (sendingTx) return;
-
-    console.log(selectedToken, slippage, selectedAddress, accountName);
 
     setsendingTx(true);
 
@@ -84,14 +86,11 @@ function CreateTab() {
         accountName
       );
 
-      console.log(tx)
-
-      const newProxyAddress = tx.events[0].address;
+      const newProxyAddress = tx.events.BeaconUpgraded.address;
 
       setnewProxyAddress(newProxyAddress);
 
-      // for fetching the latest accounts
-      callWeb3Service();
+      // resetModule();
 
       setshowPopUp(true);
     } catch (err) {
@@ -134,6 +133,17 @@ function CreateTab() {
       setinvalidName(true);
   }
 
+  function resetModule() {
+    setslippage("");
+    setaccountName("");
+    setselectedToken("");
+    setselectedAddress("");
+    setselectedAddressName("");
+
+    // for fetching the latest accounts
+    callWeb3Service();
+  }
+
   return (
     <>
       {showPopUp && (
@@ -160,7 +170,7 @@ function CreateTab() {
               </option>
               {tokenAddresses.map((token) => (
                 <option key={uuidv4()} readOnly value={token}>
-                  {ADDRESS_TO_TOKEN[token] ? ADDRESS_TO_TOKEN[token] : token}
+                  {setToken(token) ? setToken(token) : token}
                 </option>
               ))}
             </select>

@@ -1,20 +1,21 @@
 import React, { useEffect, useState } from "react";
 import {
-  changeUserSlippage,
-  changeUserToken,
-  changeUserTokenNSlippage,
-  getProxyByUser,
-  getTokenDatabase,
+  changeAccountSlippage,
+  changeAccountToken,
+  changeAccountTokenNSlippage,
+  getAccountsByUser,
+  getTokenDatabase
 } from "../../services/web3Service";
 import { useStateValue } from "../../stateManagement/stateProvider.state";
 
 import { v4 as uuidv4 } from "uuid";
 import PopUp from "../popUp/popUp.component";
-import { ADDRESS_TO_TOKEN } from "../../utils/constants";
+import { setToken } from "../../utils/constants";
 import Clipboard from "../clipboard/clipboard.component";
+import Web3 from 'web3';
 
 function ChangeTab() {
-  const [{ address }] = useStateValue();
+  const [{ address, chain }] = useStateValue();
 
   const [tokenAddresses, settokenAddresses] = useState([]);
   const [userAddresses, setuserAddresses] = useState([]);
@@ -40,16 +41,19 @@ function ChangeTab() {
 
   const [sendingTx, setsendingTx] = useState(false);
 
+
+  const web3 = new Web3();
+
   useEffect(() => {
     if (!address) return;
-    callWeb3Service();
-  }, [address]);
+    resetModule();
+  }, [address, chain]);
 
   async function callWeb3Service() {
     const tokens = await getTokenDatabase(address);
     settokenAddresses([...tokens]);
 
-    let { 0: userAddresses, 1: userAddressNames } = await getProxyByUser(
+    let { 0: userAddresses, 1: userAddressNames } = await getAccountsByUser(
       address
     );
 
@@ -66,6 +70,7 @@ function ChangeTab() {
   function handleTokenChange(e) {
     setselectedToken(e.target.value);
   }
+
   function handleUserAddressChange(e) {
     const addressIndex = userAddressNames.indexOf(e.target.value);
 
@@ -74,6 +79,9 @@ function ChangeTab() {
   }
 
   function disablePopUp() {
+
+    resetModule();
+
     setshowPopUp(false);
   }
 
@@ -81,8 +89,6 @@ function ChangeTab() {
     e.preventDefault();
 
     if (sendingTx || invalidSlippage) return;
-
-    console.log(selectedToken, slippage, selectedAddress);
 
     setsendingTx(true);
 
@@ -93,23 +99,24 @@ function ChangeTab() {
     let newslippage = "";
 
     try {
-      if (newTokenCheck && newSlippageCheck) {
-        const tx = await changeUserTokenNSlippage(
+      if (newTokenCheck && newSlippageCheck) { 
+        const tx = await changeAccountTokenNSlippage(
           selectedAddress,
           selectedToken,
           slippage,
           address
         );
 
-        newtoken = tx.events.NewUserToken.returnValues.newToken;
-        newslippage = +tx.events.NewUserSlippage.returnValues.newSlippage / 100;
+        newtoken = tx.events[0].raw.topics[1];
+        newtoken = web3.utils.toChecksumAddress("0x" + newtoken.slice(2).replace(/^0+/, ''));
+        newslippage = web3.utils.hexToNumber(tx.events[1].raw.topics[1]) / 100;
 
         setnewToken(newtoken);
         setnewSlippage(newslippage);
 
         setmessage(
-          ADDRESS_TO_TOKEN[newtoken]
-            ? "New token successfully changed to " + ADDRESS_TO_TOKEN[newtoken]
+          setToken(newtoken)
+            ? "New token successfully changed to " + setToken(newtoken)
             : "New token successfully changed to " + newtoken
         );
 
@@ -117,23 +124,26 @@ function ChangeTab() {
           "New slippage successfully changed to " + newslippage + "%"
         );
       } else if (newTokenCheck) {
-        const tx = await changeUserToken(
+        const tx = await changeAccountToken(
           selectedAddress,
           selectedToken,
           address
         );
-        console.log(tx);
-        newtoken = tx.events.NewUserToken.returnValues.newToken;
+
+        newtoken = tx.events[0].raw.topics[1];
+        newtoken = web3.utils.toChecksumAddress("0x" + newtoken.slice(2).replace(/^0+/, ''));
+        
         setnewToken(newtoken);
         setmessage(
-          ADDRESS_TO_TOKEN[newtoken]
-            ? "New token successfully changed to " + ADDRESS_TO_TOKEN[newtoken]
+          setToken(newtoken)
+            ? "New token successfully changed to " + setToken(newtoken)
             : "New token successfully changed to " + newtoken
         );
       } else if (newSlippageCheck) {
-        const tx = await changeUserSlippage(selectedAddress, slippage, address);
-        console.log(tx);
-        newslippage = +tx.events.NewUserSlippage.returnValues.newSlippage / 100;
+        const tx = await changeAccountSlippage(selectedAddress, slippage, address);
+
+        newslippage = web3.utils.hexToNumber(tx.events[0].raw.topics[1]) / 100;
+
         setnewSlippage(newslippage);
         setmessage("New slippage successfully changed to " + newslippage + "%");
       } else {
@@ -171,6 +181,18 @@ function ChangeTab() {
 
     // check number of digits after decimals
     if (e.target.value.split(".")[1]?.length > 2) setinvalidSlippage(true);
+  }
+
+  function resetModule(){
+    setslippage("");
+    setselectedToken("");
+    setselectedAddress("");
+    setselectedAddressName("");
+
+    setnewTokenCheck(false);
+    setnewSlippageCheck(false);
+
+    callWeb3Service();
   }
 
   return (
@@ -237,7 +259,7 @@ function ChangeTab() {
               </option>
               {tokenAddresses.map((token) => (
                 <option key={uuidv4()} readOnly value={token}>
-                  {ADDRESS_TO_TOKEN[token] ? ADDRESS_TO_TOKEN[token] : token}
+                  {setToken(token) ? setToken(token) : token}
                 </option>
               ))}
             </select>

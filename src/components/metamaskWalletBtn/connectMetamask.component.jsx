@@ -4,12 +4,13 @@ import "./connectMetamask.style.scss";
 
 import { toast } from "react-toastify";
 import { useStateValue } from "../../stateManagement/stateProvider.state";
+import PopUp from "../popUp/popUp.component";
 
-export default function MetamaskWalletBtn({ active }) {
+export default function MetamaskWalletBtn({ enablePopUp }) {
   const [{ address }, dispatch] = useStateValue();
   const [isLoading, setisLoading] = useState(false);
-
-  useEffect(() => {}, []);
+  const [showPopUp, setshowPopUp] = useState(false);
+  const [message, setmessage] = useState("");
 
   const accountChangeHandler = async (account) => {
     dispatch({
@@ -34,14 +35,14 @@ export default function MetamaskWalletBtn({ active }) {
         accountChangeHandler(accounts[0]);
       });
     } else {
-      alert("install metamask extension!!");
+      enablePopUp(true);
       setisLoading(false);
     }
   }
 
   function disconnectMetamaskHandler() {
     dispatch({
-      type: "METAMASK_ADDRESS",
+      type: "DISCONNECT",
       payload: "",
     });
 
@@ -58,9 +59,19 @@ export default function MetamaskWalletBtn({ active }) {
     // window.location.reload(true);
   }
 
+  // function disablePopUp() {
+  //   setshowPopUp(false);
+  // }
+
   return (
     <>
-      <div className={`metamask__btnContainer ${active ? "" : ""}`}>
+      {/* {showPopUp && ( 
+        <PopUp
+          message={message}
+          closePopUp={disablePopUp}
+        />
+      )} */}
+      <div className={`metamask__btnContainer`}>
         {address ? (
           <div
             className="metamask__connectBtn metamask__Btn"

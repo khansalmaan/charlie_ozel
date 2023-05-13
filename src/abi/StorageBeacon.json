@@ -39,7 +39,7 @@
             "type": "uint256"
           }
         ],
-        "internalType": "struct StorageBeacon.FixedConfig",
+        "internalType": "struct IStorageBeacon.FixedConfig",
         "name": "fxConfig_",
         "type": "tuple"
       },
@@ -71,7 +71,7 @@
             "type": "address"
           }
         ],
-        "internalType": "struct StorageBeacon.EmergencyMode",
+        "internalType": "struct IStorageBeacon.EmergencyMode",
         "name": "eMode_",
         "type": "tuple"
       },
@@ -79,6 +79,11 @@
         "internalType": "address[]",
         "name": "tokens_",
         "type": "address[]"
+      },
+      {
+        "internalType": "bytes4[]",
+        "name": "selectors_",
+        "type": "bytes4[]"
       },
       {
         "internalType": "uint256",
@@ -91,7 +96,7 @@
   },
   {
     "inputs": [],
-    "name": "NotProxy",
+    "name": "NotAccount",
     "type": "error"
   },
   {
@@ -120,6 +125,19 @@
     "anonymous": false,
     "inputs": [
       {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "newGasPriceBid",
+        "type": "uint256"
+      }
+    ],
+    "name": "L2GasPriceChanged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
         "indexed": true,
         "internalType": "address",
         "name": "previousOwner",
@@ -134,6 +152,53 @@
     ],
     "name": "OwnershipTransferred",
     "type": "event"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "accountToDetails",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "user",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "token",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "slippage",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "name",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes4",
+        "name": "selector_",
+        "type": "bytes4"
+      }
+    ],
+    "name": "addAuthorizedSelector",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
   },
   {
     "inputs": [
@@ -178,7 +243,7 @@
             "type": "address"
           }
         ],
-        "internalType": "struct StorageBeacon.EmergencyMode",
+        "internalType": "struct IStorageBeacon.EmergencyMode",
         "name": "newEmode_",
         "type": "tuple"
       }
@@ -192,7 +257,7 @@
     "inputs": [
       {
         "internalType": "bool",
-        "name": "newStatus",
+        "name": "newStatus_",
         "type": "bool"
       }
     ],
@@ -212,6 +277,49 @@
     "name": "changeGasPriceBid",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account_",
+        "type": "address"
+      }
+    ],
+    "name": "getAccountPayments",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "user_",
+        "type": "address"
+      }
+    ],
+    "name": "getAccountsByUser",
+    "outputs": [
+      {
+        "internalType": "address[]",
+        "name": "",
+        "type": "address[]"
+      },
+      {
+        "internalType": "string[]",
+        "name": "",
+        "type": "string[]"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -246,7 +354,7 @@
             "type": "address"
           }
         ],
-        "internalType": "struct StorageBeacon.EmergencyMode",
+        "internalType": "struct IStorageBeacon.EmergencyMode",
         "name": "",
         "type": "tuple"
       }
@@ -309,7 +417,7 @@
             "type": "uint256"
           }
         ],
-        "internalType": "struct StorageBeacon.FixedConfig",
+        "internalType": "struct IStorageBeacon.FixedConfig",
         "name": "",
         "type": "tuple"
       }
@@ -334,50 +442,7 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "user_",
-        "type": "address"
-      }
-    ],
-    "name": "getProxyByUser",
-    "outputs": [
-      {
-        "internalType": "address[]",
-        "name": "",
-        "type": "address[]"
-      },
-      {
-        "internalType": "string[]",
-        "name": "",
-        "type": "string[]"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "proxy_",
-        "type": "address"
-      }
-    ],
-    "name": "getProxyPayments",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "proxy_",
+        "name": "account_",
         "type": "address"
       }
     ],
@@ -409,11 +474,11 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "proxy_",
+        "name": "account_",
         "type": "address"
       }
     ],
-    "name": "getUserByProxy",
+    "name": "getUserByAccount",
     "outputs": [
       {
         "internalType": "address",
@@ -427,73 +492,17 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "userId_",
-        "type": "uint256"
+        "internalType": "bytes4",
+        "name": "selector_",
+        "type": "bytes4"
       }
     ],
-    "name": "getUserDetailsById",
+    "name": "isSelectorAuthorized",
     "outputs": [
       {
-        "components": [
-          {
-            "internalType": "address",
-            "name": "user",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "userToken",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "userSlippage",
-            "type": "uint256"
-          },
-          {
-            "internalType": "string",
-            "name": "accountName",
-            "type": "string"
-          }
-        ],
-        "internalType": "struct StorageBeacon.UserConfig",
+        "internalType": "bool",
         "name": "",
-        "type": "tuple"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "idToUserDetails",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "user",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "userToken",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "userSlippage",
-        "type": "uint256"
-      },
-      {
-        "internalType": "string",
-        "name": "accountName",
-        "type": "string"
+        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -519,106 +528,8 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "components": [
-          {
-            "internalType": "address",
-            "name": "user",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "userToken",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "userSlippage",
-            "type": "uint256"
-          },
-          {
-            "internalType": "string",
-            "name": "accountName",
-            "type": "string"
-          }
-        ],
-        "internalType": "struct StorageBeacon.UserConfig",
-        "name": "userDetails_",
-        "type": "tuple"
-      }
-    ],
-    "name": "issueUserID",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "id",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
     "inputs": [],
     "name": "owner",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "proxyDatabase",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "proxyToPayments",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "proxyToUser",
     "outputs": [
       {
         "internalType": "address",
@@ -672,7 +583,7 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "proxy_",
+        "name": "account_",
         "type": "address"
       },
       {
@@ -690,7 +601,7 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "proxy_",
+        "name": "account_",
         "type": "address"
       },
       {
@@ -702,26 +613,44 @@
           },
           {
             "internalType": "address",
-            "name": "userToken",
+            "name": "token",
             "type": "address"
           },
           {
             "internalType": "uint256",
-            "name": "userSlippage",
+            "name": "slippage",
             "type": "uint256"
           },
           {
             "internalType": "string",
-            "name": "accountName",
+            "name": "name",
             "type": "string"
           }
         ],
-        "internalType": "struct StorageBeacon.UserConfig",
-        "name": "userDetails_",
+        "internalType": "struct IStorageBeacon.AccountConfig",
+        "name": "acc_",
         "type": "tuple"
       }
     ],
     "name": "saveUserToDetails",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account_",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "payment_",
+        "type": "uint256"
+      }
+    ],
+    "name": "storeAccountPayment",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -743,81 +672,6 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "proxy_",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "payment_",
-        "type": "uint256"
-      }
-    ],
-    "name": "storeProxyPayment",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "taskIDs",
-    "outputs": [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "tokenDatabase",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "tokenDatabaseArray",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
         "name": "newOwner",
         "type": "address"
       }
@@ -825,78 +679,6 @@
     "name": "transferOwnership",
     "outputs": [],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      },
-      {
-        "internalType": "contract IERC20",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "userToFailedERC",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "userToFailedTokenCount",
-    "outputs": [
-      {
-        "internalType": "contract IERC20",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "userToProxies",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   }
 ]

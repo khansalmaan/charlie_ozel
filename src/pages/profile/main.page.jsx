@@ -13,37 +13,49 @@ import PopUp from "../../components/popUp/popUp.component";
 import { GOERLI_CHAIN_ID, MAINNET_CHAIND_ID } from "../../utils/constants";
 
 function Main() {
-  const [{ address }] = useStateValue();
+  const [{ address, chain }, dispatch] = useStateValue();
   const [ozelBalance, setozelBalance] = useState(0);
   const [ozelBalanceUsd, setozelBalanceUsd] = useState(0);
   const [ozelBalanceWeth, setozelBalanceWeth] = useState(0);
 
   const [showPopUp, setshowPopUp] = useState(false);
 
+  const [installMetamaskPopUpMessage] = useState(
+    "Please install the Metamask extension"
+  );
+  const [showInstallMetamaskPopUp, setshowInstallMetamaskPopUp] = useState(false);
+
   const navigate = useNavigate();
 
   useEffect(() => {
     callWeb3Service();
-  }, [address]);
+  }, [address, chain]);
 
   useEffect(() => {
     setTimeout(()=>{
-         if (
-           window.ethereum.chainId != MAINNET_CHAIND_ID &&
-           window.ethereum.chainId != GOERLI_CHAIN_ID
-         ) {
-           setshowPopUp(true);
-         }
+        try {
+          if (
+            window.ethereum.chainId != MAINNET_CHAIND_ID &&
+            window.ethereum.chainId != GOERLI_CHAIN_ID
+          ) {
+            setshowPopUp(true);
+          }
 
-         window.ethereum.on("chainChanged", (chain) => {
-           console.log("chain", chain);
+          window.ethereum.on("chainChanged", (chain) => {
+            if (chain != MAINNET_CHAIND_ID && chain != GOERLI_CHAIN_ID) {
+              setshowPopUp(true);
+            } else {
 
-           if (chain != MAINNET_CHAIND_ID && chain != GOERLI_CHAIN_ID) {
-             setshowPopUp(true);
-           } else {
-             setshowPopUp(false);
-           }
-         });
+              // dispatch chain change
+               dispatch({
+                 type: "CHAIN",
+                 payload: chain,
+               });
+
+              setshowPopUp(false);
+            }
+          });
+        } catch {}
     },500)
   }, []);
 
@@ -55,17 +67,25 @@ function Main() {
       return
     };
 
-    const ozelBalance = await balanceOf(address);
+    let ozelBalance = await balanceOf(address);
+    if (ozelBalance.includes(".")) {
+      ozelBalance = ozelBalance.split(".")[0] + "."+ ozelBalance.split(".")[1].slice(0, 3);
+    }
     setozelBalance(ozelBalance);
 
-    const [ozelBalanceWeth, ozelBalanceUsd] = await getOzelBalances(address);
+    let [ozelBalanceWeth, ozelBalanceUsd] = await getOzelBalances(address);
+    if (ozelBalanceWeth.includes(".")) {
+      ozelBalanceWeth = ozelBalanceWeth.split(".")[0] + "."+ ozelBalanceWeth.split(".")[1].slice(0, 3);
+    }
     setozelBalanceWeth(ozelBalanceWeth);
+
+    if (ozelBalanceUsd.includes(".")) {
+      ozelBalanceUsd = ozelBalanceUsd.split(".")[0] + "."+ ozelBalanceUsd.split(".")[1].slice(0, 2);
+    }
     setozelBalanceUsd(ozelBalanceUsd);
   }
 
   function handleHamChange(e) {
-    console.log(e.target.value);
-
     const event = e.target.value;
 
     if (event == "Home") {
@@ -73,10 +93,17 @@ function Main() {
     }
 
     if (event == "Docs") {
-      console.log("DOCCCC");
       window.open("https://www.google.com", "_blank", "noopener,noreferrer");
       //  navigate("https://www.google.com");
     }
+  }
+
+  function enablePopUp() {
+    setshowInstallMetamaskPopUp(true);
+  }
+
+  function disablePopUp() {
+    setshowInstallMetamaskPopUp(false);
   }
 
   return (
@@ -87,8 +114,15 @@ function Main() {
           showClosePopUp={false}
         />
       )}
+      {/* install metamask popUp */}
+      {showInstallMetamaskPopUp && (
+        <PopUp
+          message={installMetamaskPopUpMessage}
+          closePopUp={disablePopUp}
+        />
+      )}
       <div className="metamask_ham">
-        <MetamaskWalletBtn />
+        <MetamaskWalletBtn enablePopUp={enablePopUp} disablePopUp={disablePopUp} />
         <select
           name="tokens"
           id="tokens"
@@ -114,7 +148,7 @@ function Main() {
             type="text"
             value={ozelBalance ? ozelBalance : ""}
           />
-          <label className="defaultBtn">OZL Balance</label>
+          <label className="defaultBtn">OZL&nbsp;Balance</label>
         </div>
         <div className="field">
           <input
@@ -132,7 +166,7 @@ function Main() {
             type="text"
             value={ozelBalanceWeth ? ozelBalanceWeth : ""}
           />
-          <label className="defaultBtn">In ETH</label>
+          <label className="defaultBtn">in ETH</label>
         </div>
       </div>
       <ControlModule />

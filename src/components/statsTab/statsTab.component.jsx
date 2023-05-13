@@ -1,17 +1,17 @@
 import React, { useEffect, useState } from "react";
 import {
-  getProxyByUser,
-  getProxyPayments,
-  getUserDetails,
+  getAccountsByUser,
+  getAccountPayments,
+  getAccountDetails,
 } from "../../services/web3Service";
 import { useStateValue } from "../../stateManagement/stateProvider.state";
 
 import { v4 as uuidv4 } from "uuid";
-import { ADDRESS_TO_TOKEN } from "../../utils/constants";
+import { setToken } from "../../utils/constants";
 import Clipboard from "../clipboard/clipboard.component";
 
 function StatsTab() {
-  const [{ address }] = useStateValue();
+  const [{ address, chain }] = useStateValue();
 
   const [userAddresses, setuserAddresses] = useState([]);
   const [userAddressNames, setuserAddressNames] = useState([]);
@@ -19,13 +19,14 @@ function StatsTab() {
   const [slippage, setslippage] = useState("");
   const [selectedAddress, setselectedAddress] = useState("");
   const [selectedAddressName, setselectedAddressName] = useState("");
-  const [userToken, setuserToken] = useState("");
+  const [token, setuserToken] = useState("");
   const [totalPayment, settotalPayment] = useState("");
+
 
   useEffect(() => {
     if (!address) return;
-    callWeb3Service();
-  }, [address]);
+    resetModule();
+  }, [address, chain]);
 
   useEffect(() => {
     if (!selectedAddress) return;
@@ -33,7 +34,7 @@ function StatsTab() {
   }, [selectedAddress]);
 
   async function callWeb3Service() {
-    let { 0: userAddresses, 1: userAddressNames } = await getProxyByUser(
+    let { 0: userAddresses, 1: userAddressNames } = await getAccountsByUser(
       address
     );
 
@@ -48,32 +49,36 @@ function StatsTab() {
   }
 
   async function onAddressChange() {
-    let payment = await getProxyPayments(selectedAddress);
+    let payment = await getAccountPayments(selectedAddress);
    
     if (payment.includes(".")) {
       payment = payment.split(".")[0] + "." + payment.split(".")[1].slice(0, 5);
     }
     
-    console.log("payment", payment);
     settotalPayment(payment);
 
-    const userDetials = await getUserDetails(selectedAddress);
-    console.log("userDetials", userDetials);
+    const userDetials = await getAccountDetails(selectedAddress);
 
-    setslippage(userDetials.userSlippage / 100);
-    setuserToken(userDetials.userToken);
+    setslippage(userDetials.slippage / 100);
+    setuserToken(userDetials.token);
   }
 
   function handleUserAddressChange(e) {
-      console.log(e);
-  console.log(e.target.key);
-   console.log(e.target.class);
-    console.log(e.target.value);
-
     const addressIndex =  userAddressNames.indexOf(e.target.value);
 
     setselectedAddress(userAddresses[addressIndex]);
     setselectedAddressName(userAddressNames[addressIndex]);
+  }
+
+  function resetModule(){
+
+      setslippage("");
+      setselectedAddress("");
+      setselectedAddressName("");
+      setuserToken("");
+      settotalPayment("");
+
+      callWeb3Service();
   }
 
   return (
@@ -126,11 +131,7 @@ function StatsTab() {
           readOnly
           type="text"
           placeholder="User token will appear here"
-          value={
-            ADDRESS_TO_TOKEN[userToken]
-              ? ADDRESS_TO_TOKEN[userToken]
-              : userToken
-          }
+          defaultValue={setToken(token)}
         />
       </div>
       <div className="field">
